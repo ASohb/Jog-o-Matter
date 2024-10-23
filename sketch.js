@@ -16,6 +16,9 @@ var ninhoEncontrado = false;
 var ninho;
 var ovo; // Declare a variável ovo aqui
 
+var perdeu = false; // Variável para controlar o estado de derrota
+var inimigos = []; // Array para armazenar os inimigos
+
 // Para a transição de nível
 var transicao = false; // Controle se a transição está ativa
 var tempoTransicao = 0; // Temporizador para a transição
@@ -41,6 +44,14 @@ function setup() {
 }
 
 function draw() {
+  if (perdeu) {
+    background(0); // Cor de fundo para o fim de jogo
+    fill(255);
+    textSize(64);
+    textAlign(CENTER, CENTER);
+    text("Você perdeu! Tente novamente.", width / 2, height / 2);
+    return; // Não continuar com o restante do jogo se perdeu for true
+  }
   if (transicao) {
     // Fade-out
     fill(0, 150); // Cor preta com transparência
@@ -63,6 +74,17 @@ function draw() {
     // Mostrar jogador e plataformas
     jogador.mostrar();
     ninho.mostrar();
+
+    for (var inimigo of inimigos) {
+      inimigo.mostrar();
+      if (verificarColisaoComInimigo(jogador, inimigo)) {
+        perdeu = true; // Define como perdeu se o jogador colidir com o inimigo
+      }
+    }
+
+    if (jogador.caiu()) {
+      perdeu = true; // Define como perdeu se o jogador cair
+    }
 
     if (!ovoColetado) { // Só mostrar o ovo se ele não tiver sido coletado
       ovo.mostrar();
@@ -129,6 +151,8 @@ function nivel2() {
   // Defina a posição do ninho e do ovo conforme necessário
   ninho = new Ninho(1600, height - 840, 100, 80);
   ovo = new Ovo(1100, height - 650, 50, 50); // Posição do ovo no nível 2
+  inimigos.push(new Inimigo(650, height - 320, 50, 50));
+
 
   ovoColetado = false;
   ninhoEncontrado = false;
@@ -157,6 +181,12 @@ function verificarColisaoComNinho(jogador, ninho) {
     tempoTransicao = millis(); // Começa o temporizador da transição
   }
 }
+
+function verificarColisaoComInimigo(jogador, inimigo) {
+  var colisao = SAT.collides(jogador.corpo, inimigo.corpo);
+  return colisao.collided;
+}
+
 
 function jogadorTocandoPlataforma(jogador, plataforma) {
   const posicaoJogador = jogador.corpo.position;
@@ -194,7 +224,7 @@ function removerTudo() {
     }
   }
   plataformas = []; // Limpar as plataformas do nível anterior
-  
+  inimigos = [];
   // Remover o ovo e o ninho, se existirem
   if (ovo && ovo.corpo) {
     Mundo.remove(mundo, ovo.corpo);
