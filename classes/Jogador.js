@@ -48,6 +48,10 @@ class Jogador {
     resetarPulos() {
       this.pulosDisponiveis = 3;
     }
+
+    caiu() {
+      return this.corpo.position.y > height;
+    }
   }
   
 
